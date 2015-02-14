@@ -82,7 +82,7 @@ class Updater
       else
         add_new_dns = "/sbin/uci add_list dhcp.@dnsmasq[0].server=/netflix.com/#{dns_addr}"
       end
-     `serverCommand(add_new_dns)`
+      system(serverCommand(add_new_dns))
     end
     
     push_settings = "ssh -i #{@rsa_key} root@#{@remote_host} '/sbin/uci commit dhcp'"
