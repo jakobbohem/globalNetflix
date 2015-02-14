@@ -1,32 +1,31 @@
 #!/usr/bin/ruby
 require 'net/http'
+require 'trollop'
+require './Updater.rb'
 
-doReset = false
-if ARGV[0] == "reset"
-  doReset = true
+defaultRegion = "U.S."
+opts = Trollop::options do
+  opt :region, "Netflix region to change to (default #{defaultRegion}) NOT YET SUPPORTED", :type=> :string, :default => defaultRegion
+  opt :local, "Change local DNS instead of on Router - Changes for ALL domains!"
+  opt :reset, "Reset to default DNS"
 end
+p opts
 
-uri = URI("http://www.netflixdnscodes.com")
-res = Net::HTTP.get_response(uri)
-
-file = File.open("dnscodes.html", "w")
-file << res.body
-file.close
-
-regexp = /.*high success rate/
-line = regexp.match(res.body)
-
-puts line # just 1?? good for now
-newDns = /\d{3}\.\d{3}\.\d{3}\.\d{3}/.match(line.string)
-newDns = doReset ? "192.168.1.1" : newDns
 
 begin
-  system("sudo networksetup -setdnsservers Wi-Fi #{newDns}")
-  puts "updated DNS to: #{newDns}"
+  updater = Updater.new
+  newDns = opts.reset ? "" : updater.getNewDNS(opts.region)
+  puts "Found new DNS for #{opts.region}: #{newDns}"
   
-  puts "opening https://netflixaroundtheworld.com"
+  updater.updateDNS(newDns, "remote")
+  
+  searchUrl = "https://netflixaroundtheworld.com"
+  netflix = "http://www.netflix.com"  
   # also see http://www.moreflicks.com
-  system("open -a safari https://netflixaroundtheworld.com")
+  
+  puts "opening #{netflix}"
+  system("open -a safari #{netflix}")
 rescue
-  puts "An error occurred"
+  puts " - An error occurred - "
+  puts $!,$@
 end
