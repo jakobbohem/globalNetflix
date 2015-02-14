@@ -22,7 +22,7 @@ class Updater
     return  "ssh -i #{@rsa_key} root@#{@remote_host} '#{command}'"
   end
   
-  def getNewDNS(region)
+  def getNewDNS(region, index)
     # todo: switch on region, also 'reset'
     uri = URI(@dns_source)
     res = Net::HTTP.get_response(uri)
@@ -34,9 +34,13 @@ class Updater
 
     regexp = /.*high success rate.*\n^.*/ #specific to dns_source
     lines = res.body.scan(regexp)
-    puts "got #{lines.size} DNS hits"
+    puts "got #{lines.size} DNS hits from #{@dns_source}"
+    if index >= lines.size 
+      puts "WARN: desired index oob. Falling back on last"
+      index = lines.size-1
+    end
     # newDns = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.match(lines[0])
-    dnss = lines[0].scan(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)
+    dnss = lines[index].scan(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)
     
     return dnss
   end
@@ -49,8 +53,10 @@ class Updater
   case host
     
   when @@LOCAL
-    newDns = dns_addr.empty? ? @remote_host : dns_addr
-    system("sudo networksetup -setdnsservers Wi-Fi #{newDns}") 
+    newDns = dns_addr.empty? ? @remote_host : dns_addr.join(" ")
+    updateDNScommand = "sudo networksetup -setdnsservers Wi-Fi #{newDns}"
+    puts updateDNScommand
+    system(updateDNScommand) 
     
   when @@REMOTE
     load_cmd = "ssh -i #{@rsa_key} root@#{@remote_host} '/sbin/uci get dhcp.@dnsmasq[0].server'"
@@ -68,7 +74,7 @@ class Updater
     addback_list.each_slice(@@CHUNK_SIZE) do |sublist|
       command = sublist.join
       #DEBUG puts command
-      write_cmd = serverCommand(sublist.join)#"ssh -i #{@rsa_key} root@#{@remote_host} '#{command}'"
+      write_cmd = serverCommand(sublist.join) #"ssh -i #{@rsa_key} root@#{@remote_host} '#{command}'"
       `#{write_cmd}`
     end
 
@@ -82,7 +88,7 @@ class Updater
       else
         add_new_dns = "/sbin/uci add_list dhcp.@dnsmasq[0].server=/netflix.com/#{dns_addr}"
       end
-     `serverCommand(add_new_dns)`
+      system(serverCommand(add_new_dns))
     end
     
     push_settings = "ssh -i #{@rsa_key} root@#{@remote_host} '/sbin/uci commit dhcp'"
