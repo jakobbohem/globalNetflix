@@ -9,11 +9,14 @@ Currently only a single HTTP site is polled for DNS data
 Usage
 -----
 Clone the git repo,
-make sure the main program updateDNSregion.rb is runnable: chmod +x updateDNSregion.rb
-./updateDNSregion.rb # sets Netflix DNS to U.S.
-./updateDNSregion --reset # resets config
-./updateDNSregion --local # makes change on local Mac
-./updateDNSregion --help # shows more options
+make sure the main program updateDNSregion.rb is runnable: 
+
+  chmod +x updateDNSregion.rb
+
+  ./updateDNSregion.rb # sets Netflix DNS to U.S.
+  ./updateDNSregion --reset # resets config
+  ./updateDNSregion --local # makes change on local Mac
+  ./updateDNSregion --help # shows more options
 
 
 2do: 
