@@ -14,8 +14,13 @@ p opts
 
 begin
   updater = Updater.new
-  newDns = opts.reset ? "" : updater.getNewDNS(opts.region)
-  puts "Found new DNS for #{opts.region}: #{newDns}"
+  newDns = ""
+  if opts.reset 
+    puts "Setting DNS to default (router)"
+  else
+    newDns = updater.getNewDNS(opts.region)
+    puts "Found new DNS for #{opts.region}: #{newDns}"
+  end
   
   updater.updateDNS(newDns, "remote")
   

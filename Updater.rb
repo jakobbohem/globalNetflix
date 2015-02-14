@@ -68,7 +68,7 @@ class Updater
     addback_list.each_slice(@@CHUNK_SIZE) do |sublist|
       command = sublist.join
       #DEBUG puts command
-      write_cmd = serverCommand(sublist.join)#"ssh -i #{@rsa_key} root@#{@remote_host} '#{command}'"
+      write_cmd = serverCommand(sublist.join) #"ssh -i #{@rsa_key} root@#{@remote_host} '#{command}'"
       `#{write_cmd}`
     end
 
