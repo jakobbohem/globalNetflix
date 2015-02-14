@@ -34,7 +34,7 @@ class Updater
 
     regexp = /.*high success rate.*\n^.*/ #specific to dns_source
     lines = res.body.scan(regexp)
-    puts "got #{lines.size} DNS hits"
+    puts "got #{lines.size} DNS hits from #{@dns_source}"
     if index >= lines.size 
       puts "WARN: desired index oob. Falling back on last"
       index = lines.size-1
