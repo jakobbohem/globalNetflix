@@ -45,11 +45,13 @@ class Updater
     return dnss
   end
   
+  def getRemoteMapping
+    load_cmd = serverCommand("/sbin/uci get dhcp.@dnsmasq[0].server")
+    list = `#{load_cmd}`.split(' ')
+    return list
+  end
+  
   def updateDNS(dns_addr, host)
-    # if not dns_addr.is_a?(String)
-    #   raise "dns_address has bad format!"
-    # end
-    
   case host
     
   when @@LOCAL
@@ -59,9 +61,7 @@ class Updater
     system(updateDNScommand) 
     
   when @@REMOTE
-    load_cmd = "ssh -i #{@rsa_key} root@#{@remote_host} '/sbin/uci get dhcp.@dnsmasq[0].server'"
-    list = `#{load_cmd}`.split(' ')
-    
+    list = getRemoteMapping()    
     updated_list = list.reject {|x| x.include?("netflix")}    
     addback_list = updated_list.map {|entry| "/sbin/uci add_list dhcp.@dnsmasq[0].server=#{entry};"}
 
